@@ -27,21 +27,24 @@ namespace AssetBookmarks.Editor
 
                 if (item is ProjectItem projectItem)
                 {
-                    var path = projectItem.Path;
+                    var globalObjectId = projectItem.GlobalObjectID;
+                    var path = AssetDatabase.GUIDToAssetPath(globalObjectId.assetGUID.ToString());
                     var name = Path.GetFileNameWithoutExtension(path);
                     var content = new GUIContent($" {projectItem.OpenType} {name}", AssetDatabase.GetCachedIcon(path));
-                    if (GUI.Button(rect, content))
+                    var style = new GUIStyle(GUI.skin.button) { alignment = TextAnchor.MiddleLeft };
+                    if (GUI.Button(rect, content, style))
                     {
+                        var asset = AssetDatabase.LoadAssetAtPath<Object>(path);
                         switch (projectItem.OpenType)
                         {
                             case OpenType.Open:
-                                AssetDatabase.OpenAsset(AssetDatabase.LoadAssetAtPath<Object>(path));
+                                AssetDatabase.OpenAsset(asset);
                                 break;
 
                             case OpenType.Focus:
                                 EditorUtility.FocusProjectWindow();
-                                EditorGUIUtility.PingObject(AssetDatabase.LoadAssetAtPath<Object>(path));
-                                Selection.activeObject = AssetDatabase.LoadAssetAtPath<Object>(path);
+                                EditorGUIUtility.PingObject(asset);
+                                Selection.activeObject = asset;
                                 EditorUtility.FocusProjectWindow();
                                 break;
 
