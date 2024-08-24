@@ -44,7 +44,6 @@ namespace AssetBookmarks.Editor
                 _state = nextState;
             }
         }
-
         private class Model
         {
             public Model()
@@ -66,7 +65,11 @@ namespace AssetBookmarks.Editor
 
                     if (e.Length == 2 && Enum.TryParse<OpenType>(e[1], out var t))
                     {
-                        Items.Add(new ProjectItem(e[0], t));
+                        if (GlobalObjectId.TryParse(e[0], out var globalObjectId))
+                        {
+                            var path = AssetDatabase.GUIDToAssetPath(globalObjectId.assetGUID.ToString());
+                            Items.Add(new ProjectItem(path, t));
+                        }
                     }
 
                     if (e.Length == 2 && e[0] == "o")
@@ -100,11 +103,12 @@ namespace AssetBookmarks.Editor
             {
                 Path = path;
                 OpenType = openType;
+                GlobalObjectID = GlobalObjectId.GetGlobalObjectIdSlow(AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path));
             }
 
             public void Serialize(StringBuilder stringBuilder)
             {
-                stringBuilder.Append(Path);
+                stringBuilder.Append(GlobalObjectID.ToString());
                 stringBuilder.Append("|");
                 stringBuilder.Append(OpenType);
                 stringBuilder.Append(",");
@@ -112,6 +116,7 @@ namespace AssetBookmarks.Editor
 
             public string Path { get; }
             public OpenType OpenType { get; set; }
+            public GlobalObjectId GlobalObjectID { get; }
         }
 
         private class OutsideItem : IItem
